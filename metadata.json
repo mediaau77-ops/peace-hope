@@ -1,0 +1,7 @@
+{
+  "name": "Peace & Hope Super Admin CMS",
+  "description": "Enterprise Super Admin CMS and live broadcast management system for Peace & Hope Seventh-day Adventist platform.",
+  "requestFramePermissions": ["camera", "microphone"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
+

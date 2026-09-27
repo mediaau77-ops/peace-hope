@@ -1,11 +1,23 @@
-<div align="center">
+# Peace & Hope - Church Platform
 
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
+## Environment Configuration
 
-  <h1>Built with AI Studio</h2>
+Configure the following environment variables in your deployment environment (`.env.local` for Next.js or `.env` for Vite):
 
-  <p>The fastest path from prompt to production with Gemini.</p>
+```bash
+# Supabase Project URL (MUST NOT have trailing slash, and MUST NOT include /rest/v1)
+# Correct: https://xyzcompany.supabase.co
+# Incorrect: https://xyzcompany.supabase.co/
+# Incorrect: https://xyzcompany.supabase.co/rest/v1
+NEXT_PUBLIC_SUPABASE_URL="https://<project-ref>.supabase.co"
+VITE_SUPABASE_URL="https://<project-ref>.supabase.co"
 
-  <a href="https://aistudio.google.com/apps">Start building</a>
+# Supabase Anonymous Public API Key (JWT token from Project Settings -> API)
+NEXT_PUBLIC_SUPABASE_ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+VITE_SUPABASE_ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+```
 
-</div>
+### Notes on URL Normalization & Resiliency
+- The app automatically strips trailing slashes and accidental `/rest/v1` suffixes to prevent `Invalid path specified in request URL` errors.
+- Realtime channels use progressive enhancement: if Realtime is disconnected or disabled, initial content remains rendered, and errors are handled silently at debug level.
+- All public homepage sections and the Header component are wrapped in isolated Error Boundaries to ensure no single component failure can bring down the page.

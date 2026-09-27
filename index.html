@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Peace & Hope Super Admin CMS</title>
+    <meta name="description" content="Enterprise Super Admin CMS and live broadcast management system for Peace & Hope Seventh-day Adventist platform." />
+    <meta property="og:title" content="Peace & Hope Super Admin CMS" />
+    <meta property="og:description" content="Enterprise Super Admin CMS and live broadcast management system for Peace & Hope Seventh-day Adventist platform." />
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:locale:alternate" content="fr_FR" />
+    <meta property="og:locale:alternate" content="rw_RW" />
+    <meta name="twitter:card" content="summary_large_image" />
+    
+    <!-- i18n SEO hreflang alternates -->
+    <link rel="alternate" hreflang="en" href="https://peacehope.org/#en" />
+    <link rel="alternate" hreflang="fr" href="https://peacehope.org/#fr" />
+    <link rel="alternate" hreflang="rw" href="https://peacehope.org/#rw" />
+    <link rel="alternate" hreflang="x-default" href="https://peacehope.org/" />
+
+    <!-- Avoid Flash of Wrong Theme: Apply saved theme before initial paint -->
+    <script>
+      (function() {
+        try {
+          var saved = localStorage.getItem('theme');
+          var isDark = saved === 'dark';
+          if (isDark) {
+            document.documentElement.classList.add('dark');
+            document.documentElement.style.colorScheme = 'dark';
+          } else {
+            document.documentElement.classList.remove('dark');
+            document.documentElement.style.colorScheme = 'light';
+          }
+        } catch (e) {}
+      })();
+    </script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400;1,600&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;0,6..72,700;1,6..72,400;1,6..72,600&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Cinzel:wght@600;700&display=swap" rel="stylesheet">
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Church",
+      "name": "Peace & Hope",
+      "description": "A Seventh-day Adventist digital ministry sharing the Everlasting Gospel through biblical teachings, live worship, daily devotionals, and intercessory prayer.",
+      "url": "https://peacehope.org",
+      "knowsLanguage": ["en", "rw", "fr"],
+      "openingHoursSpecification": [
+        {
+          "@type": "OpeningHoursSpecification",
+          "dayOfWeek": ["Saturday"],
+          "opens": "09:00",
+          "closes": "17:00"
+        }
+      ]
+    }
+    </script>
+  </head>
+  <body class="bg-[#FAF7F2] dark:bg-[#0D182E] text-slate-800 dark:text-slate-100 antialiased selection:bg-[#C5A059] selection:text-white transition-colors duration-200">
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

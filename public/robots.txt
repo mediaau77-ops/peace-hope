@@ -1,0 +1,25 @@
+# Peace & Hope Public Sitemap & Robot Directives
+User-agent: *
+Allow: /
+Allow: /teachings
+Allow: /sermons
+Allow: /devotionals
+Allow: /events
+Allow: /prayer
+Allow: /testimonies
+Allow: /bible
+Allow: /livestream
+Allow: /about
+Allow: /contact
+Allow: /giving
+Allow: /auth/login
+Allow: /auth/register
+
+# Disallow Private Administrative Dashboards and Auth Gateways
+Disallow: /auth/admin-login
+Disallow: /dashboard/
+Disallow: /dashboard
+Disallow: /admin/
+Disallow: /admin
+
+Sitemap: https://peacehope.org/sitemap.xml
