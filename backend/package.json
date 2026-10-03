@@ -8,6 +8,7 @@
     "verify": "node ../scripts/verify-backend-js.mjs"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.116.0",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",

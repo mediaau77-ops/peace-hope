@@ -2,10 +2,14 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
+import { createClient } from '@supabase/supabase-js';
 import { env } from './config/env.js';
 
 export function createApp() {
   const app = express();
+  const supabase = createClient(env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
   const allowedOrigins = env.ALLOWED_ORIGINS.split(',').map((origin) => origin.trim()).filter(Boolean);
 
   app.use(helmet());
@@ -29,8 +33,31 @@ export function createApp() {
     res.json({ ok: true, data: { status: 'up' } });
   });
 
-  app.get('/api/settings/public', (req, res) => {
-    res.json({ ok: true, data: { churchName: 'Peace & Hope', theme: 'light' } });
+  app.get('/api/settings/public', async (_req, res, next) => {
+    try {
+      const { data: publicSettings, error: publicSettingsError } = await supabase
+        .from('settings')
+        .select('value')
+        .eq('key', 'public')
+        .maybeSingle();
+
+      if (publicSettingsError) throw publicSettingsError;
+      if (publicSettings?.value) {
+        res.json({ ok: true, data: publicSettings.value });
+        return;
+      }
+
+      const { data: settingsRow, error: settingsRowError } = await supabase
+        .from('settings')
+        .select('church_name, tagline, mission_statement, contact_email, contact_phone, address, country, default_language, supported_languages, theme, social_links')
+        .limit(1)
+        .maybeSingle();
+
+      if (settingsRowError) throw settingsRowError;
+      res.json({ ok: true, data: settingsRow || null });
+    } catch (error) {
+      next(error);
+    }
   });
 
   app.get('/api/health', (req, res) => {
