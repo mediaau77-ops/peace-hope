@@ -8,20 +8,26 @@ dotenv.config();
  * This client is strictly instantiated on the backend and NEVER bundled into the client.
  */
 let cachedClient: SupabaseClient | null = null;
+let hasWarnedMissingSupabase = false;
 
 export function getDbClient(): SupabaseClient {
   if (cachedClient) return cachedClient;
 
-  const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL || '';
+  const supabaseUrl =
+    process.env.SUPABASE_URL ||
+    process.env.VITE_SUPABASE_URL ||
+    'https://placeholder.supabase.co';
+
   const serviceKey =
     process.env.SUPABASE_SERVICE_ROLE_KEY ||
+    process.env.SUPABASE_ANON_KEY ||
     process.env.VITE_SUPABASE_SERVICE_ROLE_KEY ||
     process.env.VITE_SUPABASE_ANON_KEY ||
-    process.env.SUPABASE_ANON_KEY ||
-    '';
+    'placeholder-service-role-key';
 
-  if (!supabaseUrl) {
-    console.warn('[SERVER DB] SUPABASE_URL not configured in environment.');
+  if (!process.env.SUPABASE_URL && !process.env.VITE_SUPABASE_URL && !hasWarnedMissingSupabase) {
+    hasWarnedMissingSupabase = true;
+    console.warn('[SERVER DB] Supabase environment is not configured. Falling back to a safe placeholder client so the app can boot without secrets.');
   }
 
   cachedClient = createClient(supabaseUrl, serviceKey, {

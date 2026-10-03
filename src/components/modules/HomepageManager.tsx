@@ -71,47 +71,7 @@ export const HomepageManager: React.FC = () => {
         // fallback
       }
     }
-    return [
-      {
-        id: 'sec-1',
-        title: 'Welcome to Peace & Hope',
-        subtitle: 'A sanctuary of grace, prayer, and transformative truth',
-        type: 'text',
-        content: 'We welcome you to experience Christ-centered worship, inspiring Biblical teachings, and a warm family of faith.',
-        visible: true,
-        sort_order: 1,
-        status: 'published',
-        cover_image_url: 'https://images.unsplash.com/photo-1544427920-c49ccfb85579?auto=format&fit=crop&w=1200&q=80',
-      },
-      {
-        id: 'sec-2',
-        title: 'Upcoming Fellowship & Worship',
-        subtitle: 'Join us in prayer, Bible study, and praise services',
-        type: 'events_preview',
-        visible: true,
-        sort_order: 2,
-        status: 'published',
-      },
-      {
-        id: 'sec-3',
-        title: 'Stories of Transformed Lives',
-        subtitle: 'Witness how prayer moves mountains in our community',
-        type: 'testimonial',
-        visible: true,
-        sort_order: 3,
-        status: 'published',
-      },
-      {
-        id: 'sec-4',
-        title: 'Need Urgent Prayer Support?',
-        subtitle: 'Our intercessory pastoral team stands with you 24/7',
-        type: 'callout',
-        content: 'Submit your prayer request or connect directly with our pastoral prayer team in confidential prayer rooms.',
-        visible: true,
-        sort_order: 4,
-        status: 'published',
-      },
-    ];
+    return [];
   });
 
   // Section Modal state
