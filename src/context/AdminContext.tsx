@@ -267,7 +267,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   });
 
   const [currentUser, setCurrentUser] = useState<User | null>(() => {
-    return INITIAL_USERS[0] || null;
+    return null;
   });
 
   const [activeTab, setActiveTab] = useState<AdminTab>('overview');
@@ -331,7 +331,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const [users, setUsers] = useState<User[]>(() => {
     const saved = localStorage.getItem('ph_users');
-    return saved ? filterMock(JSON.parse(saved), 'usr') : INITIAL_USERS;
+    return saved ? filterMock(JSON.parse(saved), 'usr') : [];
   });
 
   const [notifications, setNotifications] = useState<NotificationAnnouncement[]>(() => {

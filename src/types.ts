@@ -26,7 +26,7 @@ export interface StreamState {
   viewersCount: number;
   bitrateKbps: number;
   latencySec: number;
-  networkQuality: 'Excellent' | 'Good' | 'Fair' | 'Poor';
+  networkQuality: 'Excellent' | 'Good' | 'Fair' | 'Poor' | 'Unknown';
   isRecording: boolean;
   streamSource: 'camera' | 'rtmp' | 'hls';
   externalUrl?: string;
