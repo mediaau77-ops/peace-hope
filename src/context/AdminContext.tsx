@@ -256,7 +256,7 @@ const filterMock = <T extends { id?: string }>(items: T[], prefix: string): T[] 
   return items.filter((item) => {
     if (!item.id) return false;
     // Discard demo legacy IDs like 't-1', 's-1', 'b-1', 'dev-1', 'pr-1', 'ev-1', 'test-1', 'm-1', 'notif-1'
-    return !item.id.match(new RegExp(`^${prefix}-\\d+$`));
+    return item.id !== 'usr-admin-primary' && !item.id.match(new RegExp(`^${prefix}-\\d+$`));
   });
 };
 

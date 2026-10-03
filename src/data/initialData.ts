@@ -1,5 +1,4 @@
 import {
-  User,
   StreamState,
   HeroBanner,
   Teaching,
@@ -32,8 +31,6 @@ export const INITIAL_STREAM_STATE: StreamState = {
   streamSource: 'camera',
   externalUrl: '',
 };
-
-export const INITIAL_USERS: User[] = [];
 
 // Clean CMS Datasets — All mock, demo, and hardcoded items removed.
 // Every record is fetched dynamically from Supabase database tables.
