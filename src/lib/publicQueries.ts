@@ -48,8 +48,8 @@ export async function fetchPublicSettings(): Promise<PublicSettings | null> {
       logoUrl: data.logo_url || data.logoUrl,
       tagline: data.tagline || '',
       missionStatement: data.mission_statement || data.missionStatement || '',
-      primaryColor: data.primary_color || data.primaryColor || '#000000',
-      accentColor: data.accent_color || data.accentColor || '#4b5563',
+      primaryColor: data.primary_color || data.primaryColor || '',
+      accentColor: data.accent_color || data.accentColor || '',
       contactEmail: data.contact_email || data.contactEmail || '',
       contactPhone: data.contact_phone || data.contactPhone || '',
       address: data.address || data.contact_address || '',
@@ -91,7 +91,7 @@ export async function fetchPublicAnnouncement(): Promise<PublicAnnouncement | nu
       id: data.id,
       title: data.title,
       content: data.content,
-      priority: data.priority || 'Normal',
+      priority: data.priority || '',
       category: data.category,
       link_url: data.link_url || data.linkUrl,
       link_text: data.link_text,
@@ -119,25 +119,7 @@ export async function fetchPublicHomepage(): Promise<PublicHomepage | null> {
       .limit(1)
       .maybeSingle();
 
-    if (error || !data) {
-      // Check if table has any row regardless of explicit status flag
-      const { data: fallbackData } = await supabase
-        .from(SUPABASE_TABLES.HOMEPAGE)
-        .select('*')
-        .limit(1)
-        .maybeSingle();
-
-      if (!fallbackData) return null;
-      return {
-        id: fallbackData.id,
-        hero_title: fallbackData.hero_title || fallbackData.title,
-        hero_subtitle: fallbackData.hero_subtitle || fallbackData.subtitle,
-        hero_image_url: fallbackData.hero_image_url || fallbackData.bgImageUrl || fallbackData.cover_image_url,
-        welcome_video_url: fallbackData.welcome_video_url || fallbackData.welcomeVideoUrl,
-        welcome_message: fallbackData.welcome_message || fallbackData.missionStatement,
-        status: fallbackData.status,
-      };
-    }
+    if (error || !data) return null;
 
     return {
       id: data.id,
@@ -210,10 +192,10 @@ export async function fetchPublicSermons(limit = 3): Promise<PublicSermon[]> {
     return data.map((s) => ({
       id: s.id,
       title: s.title,
-      speaker: s.speaker || s.pastor || 'Pastor',
+      speaker: s.speaker || s.pastor || '',
       date: s.date || s.created_at,
       bibleReference: s.bibleReference || s.bible_reference,
-      category: s.category || 'Divine Worship',
+      category: s.category || '',
       videoUrl: s.videoUrl || s.video_url,
       thumbnailUrl: s.thumbnailUrl || s.thumbnail_url || s.cover_image_url,
       cover_image_url: s.cover_image_url || s.thumbnailUrl || s.thumbnail_url,
@@ -245,31 +227,7 @@ export async function fetchPublicTodayDevotional(): Promise<PublicDevotional | n
       .limit(1)
       .maybeSingle();
 
-    if (error || !data) {
-      // Fallback query if 'date' column uses timestamp format
-      const { data: fallback } = await supabase
-        .from(SUPABASE_TABLES.DEVOTIONALS)
-        .select('*')
-        .eq('status', 'published')
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .maybeSingle();
-
-      if (!fallback) return null;
-      return {
-        id: fallback.id,
-        title: fallback.title,
-        date: fallback.date || fallback.created_at,
-        verseReference: fallback.verseReference || fallback.verse_reference,
-        verseText: fallback.verseText || fallback.verse_text,
-        meditation: fallback.meditation || fallback.content || '',
-        prayer: fallback.prayer,
-        author: fallback.author,
-        imageUrl: fallback.imageUrl || fallback.cover_image_url,
-        cover_image_url: fallback.cover_image_url || fallback.imageUrl,
-        status: fallback.status,
-      };
-    }
+    if (error || !data) return null;
 
     return {
       id: data.id,
@@ -315,8 +273,8 @@ export async function fetchPublicUpcomingEvents(limit = 3): Promise<PublicEvent[
       date: ev.date || ev.startDate || ev.start_date,
       startDate: ev.startDate || ev.start_date,
       endDate: ev.endDate || ev.end_date,
-      time: ev.time || '9:00 AM',
-      location: ev.location || 'Sanctuary & Online',
+      time: ev.time || '',
+      location: ev.location || '',
       speaker: ev.speaker,
       bannerUrl: ev.bannerUrl || ev.banner_url || ev.cover_image_url,
       cover_image_url: ev.cover_image_url || ev.bannerUrl || ev.imageUrl,
@@ -341,49 +299,10 @@ export async function fetchPublicVerseOfTheDay(): Promise<PublicBibleVerse | nul
   if (!supabase) return null;
 
   try {
-    // 1. Check if settings has a verse_of_the_day specified
     const settings = await fetchPublicSettings();
-    if (settings?.verse_of_the_day_id) {
-      const { data, error } = await supabase
-        .from(SUPABASE_TABLES.BIBLE_VERSES)
-        .select(`
-          id,
-          verse_number,
-          verse_text,
-          chapter:bible_chapters(
-            chapter_number,
-            book:bible_books(
-              name,
-              translation:bible_translations(name)
-            )
-          )
-        `)
-        .eq('id', settings.verse_of_the_day_id)
-        .maybeSingle();
+    if (!settings?.verse_of_the_day_id) return null;
 
-      if (!error && data) {
-        const chapter = Array.isArray(data.chapter) ? data.chapter[0] : (data.chapter as any);
-        const book = chapter?.book ? (Array.isArray(chapter.book) ? chapter.book[0] : chapter.book) : null;
-        const translation = book?.translation ? (Array.isArray(book.translation) ? book.translation[0] : book.translation) : null;
-
-        const bookName = book?.name || 'Scripture';
-        const chapNum = chapter?.chapter_number || 1;
-        const verseNum = data.verse_number || 1;
-
-        return {
-          id: data.id,
-          verse_text: data.verse_text,
-          verse_number: verseNum,
-          chapter_number: chapNum,
-          book_name: bookName,
-          translation_name: translation?.name || 'King James Version (KJV)',
-          reference: `${bookName} ${chapNum}:${verseNum}`,
-        };
-      }
-    }
-
-    // 2. Fallback: Query any published verse if table has records
-    const { data: firstVerse, error: verseErr } = await supabase
+    const { data, error } = await supabase
       .from(SUPABASE_TABLES.BIBLE_VERSES)
       .select(`
         id,
@@ -397,29 +316,28 @@ export async function fetchPublicVerseOfTheDay(): Promise<PublicBibleVerse | nul
           )
         )
       `)
+      .eq('id', settings.verse_of_the_day_id)
       .limit(1)
       .maybeSingle();
 
-    if (verseErr || !firstVerse) {
-      // If table exists but has no records or no relationship, return null so section hides gracefully
-      return null;
-    }
+    if (error || !data) return null;
 
-    const chapter = Array.isArray(firstVerse.chapter) ? firstVerse.chapter[0] : (firstVerse.chapter as any);
+    const chapter = Array.isArray(data.chapter) ? data.chapter[0] : (data.chapter as any);
     const book = chapter?.book ? (Array.isArray(chapter.book) ? chapter.book[0] : chapter.book) : null;
     const translation = book?.translation ? (Array.isArray(book.translation) ? book.translation[0] : book.translation) : null;
+    if (!chapter?.chapter_number || !book?.name || !translation?.name || !data.verse_number || !data.verse_text) return null;
 
-    const bookName = book?.name || 'Scripture';
-    const chapNum = chapter?.chapter_number || 1;
-    const verseNum = firstVerse.verse_number || 1;
+    const bookName = book.name;
+    const chapNum = chapter.chapter_number;
+    const verseNum = data.verse_number;
 
     return {
-      id: firstVerse.id,
-      verse_text: firstVerse.verse_text,
+      id: data.id,
+      verse_text: data.verse_text,
       verse_number: verseNum,
       chapter_number: chapNum,
       book_name: bookName,
-      translation_name: translation?.name || 'Holy Scripture',
+      translation_name: translation.name,
       reference: `${bookName} ${chapNum}:${verseNum}`,
     };
   } catch {
@@ -447,8 +365,8 @@ export async function fetchPublicPrayerRequests(limit = 4): Promise<PublicPrayer
 
     return data.map((p) => ({
       id: p.id,
-      authorName: p.authorName || p.author_name || (p.is_anonymous ? 'Anonymous Brother/Sister' : 'Church Member'),
-      location: p.location || 'Rwanda',
+      authorName: p.is_anonymous ? 'Anonymous' : (p.authorName || p.author_name || ''),
+      location: p.location || '',
       requestText: p.requestText || p.request_text || p.title || '',
       title: p.title,
       isAnonymous: p.isAnonymous ?? p.is_anonymous,
@@ -516,8 +434,8 @@ export async function fetchPublicTestimonies(limit = 3): Promise<PublicTestimony
 
     return data.map((t) => ({
       id: t.id,
-      authorName: t.authorName || t.author_name || 'Faithful Member',
-      location: t.location || 'Rwanda',
+      authorName: t.authorName || t.author_name || '',
+      location: t.location || '',
       title: t.title,
       story: t.story || t.testimony_text || '',
       cover_image_url: t.cover_image_url || t.imageUrl || t.mediaUrl,
@@ -550,12 +468,12 @@ export async function fetchPublicLivestream(): Promise<PublicLivestream | null> 
 
     return {
       id: data.id,
-      title: data.title || 'Divine Worship Service',
+      title: data.title || '',
       status: 'live',
       isLive: true,
       stream_url: data.stream_url || data.streamServerUrl,
       streamServerUrl: data.streamServerUrl || data.stream_url,
-      viewersCount: data.viewersCount ?? data.viewers_count ?? 1,
+      viewersCount: data.viewersCount ?? data.viewers_count ?? 0,
       startedAt: data.startedAt || data.started_at,
       hls_url: data.hls_url,
     };
@@ -590,8 +508,8 @@ export async function fetchPublicMeeting(): Promise<PublicMeeting | null> {
       title: data.title,
       description: data.description,
       date: data.date,
-      time: data.time || '18:00',
-      join_url: data.join_url || data.joinUrl || '/live',
+      time: data.time || '',
+      join_url: data.join_url || data.joinUrl || '',
       cover_image_url: data.cover_image_url || data.imageUrl,
       status: data.status,
       is_public: true,
@@ -753,15 +671,15 @@ export async function fetchPublicTeachings(options: {
       slug: t.slug || t.id,
       excerpt: t.excerpt || (t.content ? t.content.slice(0, 160) + '...' : ''),
       body: t.body || t.content || '',
-      author: t.author || t.author_name || 'Pastor / Teacher',
-      category: t.category || 'Biblical Study',
+      author: t.author || t.author_name || '',
+      category: t.category || '',
       tags: t.tags || [],
       cover_image_url: t.cover_image_url || t.thumbnail_url || t.image_url,
       bible_references: t.bible_references || [],
       attachments: t.attachments || [],
       video_url: t.video_url,
       audio_url: t.audio_url,
-      read_time: t.read_time || '5 min read',
+      read_time: t.read_time || '',
       status: t.status,
       published_at: t.published_at || t.created_at,
       created_at: t.created_at,
@@ -795,15 +713,15 @@ export async function fetchPublicTeachingBySlug(slug: string): Promise<PublicTea
       slug: data.slug || data.id,
       excerpt: data.excerpt,
       body: data.body || data.content || '',
-      author: data.author || data.author_name || 'Peace & Hope Ministry',
-      category: data.category || 'Doctrine & Prophecy',
+      author: data.author || data.author_name || '',
+      category: data.category || '',
       tags: data.tags || [],
       cover_image_url: data.cover_image_url || data.thumbnail_url || data.image_url,
       bible_references: data.bible_references || [],
       attachments: data.attachments || [],
       video_url: data.video_url,
       audio_url: data.audio_url,
-      read_time: data.read_time || '7 min read',
+      read_time: data.read_time || '',
       status: data.status,
       published_at: data.published_at || data.created_at,
       created_at: data.created_at,
@@ -890,14 +808,14 @@ export async function fetchPublicSermonsList(options: {
     const formatted: PublicSermon[] = data.map((s) => ({
       id: s.id,
       title: s.title,
-      speaker: s.speaker || s.pastor || 'Pastor',
+      speaker: s.speaker || s.pastor || '',
       date: s.date || s.created_at,
       bibleReference: s.bible_reference || s.bibleReference,
-      category: s.category || s.series || 'Sunday Service',
+      category: s.category || s.series || '',
       videoUrl: s.video_url || s.videoUrl,
       thumbnailUrl: s.thumbnail_url || s.thumbnailUrl || s.cover_image_url,
       cover_image_url: s.cover_image_url || s.thumbnail_url,
-      duration: s.duration || '45 mins',
+      duration: s.duration || '',
       transcript: s.transcript,
       status: s.status,
       created_at: s.created_at,
@@ -928,14 +846,14 @@ export async function fetchPublicSermonBySlug(slug: string): Promise<PublicSermo
     return {
       id: data.id,
       title: data.title,
-      speaker: data.speaker || data.pastor || 'Pastor',
+      speaker: data.speaker || data.pastor || '',
       date: data.date || data.created_at,
       bibleReference: data.bible_reference || data.bibleReference,
-      category: data.category || data.series || 'Divine Service',
+      category: data.category || data.series || '',
       videoUrl: data.video_url || data.videoUrl,
       thumbnailUrl: data.thumbnail_url || data.cover_image_url,
       cover_image_url: data.cover_image_url || data.thumbnail_url,
-      duration: data.duration || '45 mins',
+      duration: data.duration || '',
       transcript: data.transcript,
       status: data.status,
       created_at: data.created_at,
@@ -983,7 +901,7 @@ export async function fetchPublicDevotionalsList(options: {
       verseText: d.verse_text || d.verseText,
       meditation: d.meditation || d.content || '',
       prayer: d.prayer,
-      author: d.author || 'Peace & Hope Pastoral Team',
+      author: d.author || '',
       cover_image_url: d.cover_image_url || d.image_url,
       status: d.status,
       created_at: d.created_at,
@@ -1019,7 +937,7 @@ export async function fetchPublicDevotionalBySlug(slug: string): Promise<PublicD
       verseText: data.verse_text,
       meditation: data.meditation || data.content || '',
       prayer: data.prayer,
-      author: data.author || 'Pastoral Ministry',
+      author: data.author || '',
       cover_image_url: data.cover_image_url || data.image_url,
       status: data.status,
       created_at: data.created_at,
@@ -1078,8 +996,8 @@ export async function fetchPublicEventsList(options: {
       title: e.title,
       theme: e.theme,
       date: e.date || e.start_date,
-      time: e.time || '10:00 AM',
-      location: e.location || 'Main Sanctuary, Kigali',
+      time: e.time || '',
+      location: e.location || '',
       speaker: e.speaker,
       cover_image_url: e.cover_image_url || e.banner_url || e.image_url,
       description: e.description,
@@ -1117,8 +1035,8 @@ export async function fetchPublicEventBySlug(slug: string): Promise<PublicEvent 
       title: data.title,
       theme: data.theme,
       date: data.date || data.start_date,
-      time: data.time || '10:00 AM',
-      location: data.location || 'Peace & Hope Sanctuary',
+      time: data.time || '',
+      location: data.location || '',
       speaker: data.speaker,
       cover_image_url: data.cover_image_url || data.banner_url,
       description: data.description,
@@ -1172,8 +1090,8 @@ export async function fetchPublicPrayerWall(options: {
 
     const formatted: PublicPrayerRequest[] = data.map((p) => ({
       id: p.id,
-      authorName: p.is_anonymous ? 'Anonymous' : (p.author_name || p.authorName || 'Intercessor'),
-      location: p.location || 'Rwanda',
+      authorName: p.is_anonymous ? 'Anonymous' : (p.author_name || p.authorName || ''),
+      location: p.location || '',
       requestText: p.request_text || p.requestText || p.title || '',
       title: p.title,
       isAnonymous: Boolean(p.is_anonymous),
@@ -1255,9 +1173,9 @@ export async function fetchPublicTestimoniesList(options: {
 
     const formatted: PublicTestimony[] = data.map((t) => ({
       id: t.id,
-      authorName: t.author_name || t.authorName || 'Church Member',
-      location: t.location || 'Kigali, Rwanda',
-      title: t.title || 'God Has Been Faithful',
+      authorName: t.author_name || t.authorName || '',
+      location: t.location || '',
+      title: t.title || '',
       story: t.story || t.testimony_text || '',
       cover_image_url: t.cover_image_url || t.media_url,
       status: t.status,
@@ -1288,8 +1206,8 @@ export async function fetchPublicTestimonyBySlug(slug: string): Promise<PublicTe
 
     return {
       id: data.id,
-      authorName: data.author_name || 'Member',
-      location: data.location || 'Rwanda',
+      authorName: data.author_name || '',
+      location: data.location || '',
       title: data.title,
       story: data.story || data.testimony_text || '',
       cover_image_url: data.cover_image_url || data.media_url,
